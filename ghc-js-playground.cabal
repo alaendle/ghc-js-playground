@@ -41,6 +41,8 @@ library
         Impl
     hs-source-dirs:
         js-src
+    js-sources:
+        js-src/Impl.js
   else
     other-modules:
         Impl

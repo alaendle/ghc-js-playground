@@ -2,5 +2,4 @@ module Impl
     ( printId
     ) where
 
-printId :: IO ()
-printId = putStrLn "Hello from JavaScript!"
+foreign import javascript printId :: IO ()

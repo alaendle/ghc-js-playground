@@ -40,6 +40,8 @@ library:
       then:
         source-dirs:
         - js-src
+        js-sources:
+        - js-src/Impl.js
       else:
         source-dirs:
         - hs-src
