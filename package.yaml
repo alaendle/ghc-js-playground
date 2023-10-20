@@ -35,6 +35,14 @@ ghc-options:
 
 library:
   source-dirs: src
+  when:
+    - condition: arch(javascript)
+      then:
+        source-dirs:
+        - js-src
+      else:
+        source-dirs:
+        - hs-src
 
 executables:
   ghc-js-playground-exe:

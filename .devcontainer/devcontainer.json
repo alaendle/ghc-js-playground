@@ -7,7 +7,8 @@
 			"extensions": [
 				"mhutchie.git-graph",
 				"streetsidesoftware.code-spell-checker",
-				"exiasr.hadolint"
+				"exiasr.hadolint",
+				"haskell.haskell"
 			]
 		}
 	}
