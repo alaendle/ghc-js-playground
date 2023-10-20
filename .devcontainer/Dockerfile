@@ -22,7 +22,8 @@ RUN apt-get update && \
       locales-all=2.36-9+deb12u3 \
       # additionally
       ca-certificates=20230311 \
-      git=1:2.39.2-1.1 && \
+      git=1:2.39.2-1.1 \
+      sudo=1.9.13p3-1+deb12u1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -53,6 +54,7 @@ RUN git clone --depth 1 --branch 3.1.47  https://github.com/emscripten-core/emsd
 ENV EMSDK=/emsdk
 ENV EMSDK_NODE=/emsdk/node/16.20.0_64bit/bin/node
 ENV PATH=${EMSDK}:${EMSDK}/upstream/emscripten:${EMSDK}/node/16.20.0_64bit/bin:${PATH}
+ENV LANG=en_US.UTF-8
 
 RUN git clone --depth 1 --branch  ghc-9.8.1-release https://gitlab.haskell.org/ghc/ghc.git --recursive
 WORKDIR /ghc
@@ -63,3 +65,16 @@ RUN ./boot && \
       happy-1.20.1.1 && \
     emconfigure ./configure --target=javascript-unknown-ghcjs  && \
     hadrian/build -j12 --flavour=quick --bignum=native --docs=none
+
+# work as user
+
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME && \
+    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
+    echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
+
+USER $USERNAME
