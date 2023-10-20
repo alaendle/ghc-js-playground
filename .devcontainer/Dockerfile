@@ -13,6 +13,13 @@ RUN apt-get update && \
       libncurses-dev=6.4-4 \
       libncurses5=6.4-4 \
       libtinfo5=6.4-4 \
+      # required for emscripten
+      cmake=3.25.1-1 \
+      python3=3.11.2-1+b1 \
+      # required for ghc
+      autoconf=2.71-3 \
+      automake=1:1.16.5-1.3 \
+      locales-all=2.36-9+deb12u3 \
       # additionally
       ca-certificates=20230311 \
       git=1:2.39.2-1.1 && \
@@ -29,7 +36,30 @@ ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=yes \
 ENV PATH="/root/.local/bin:/root/.cabal/bin:/root/.ghcup/bin:$PATH"
 ARG GHC_VERSION=9.6.3
 ARG CABAL_VERSION=3.10.1.0
+ARG STACK_VERSION=2.13.1
+ARG HLS_VERSION=2.4.0.0
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh && \
     ghcup install ghc ${GHC_VERSION} --set && \
-    ghcup install cabal ${CABAL_VERSION} --set
+    ghcup install cabal ${CABAL_VERSION} --set && \
+    ghcup install stack ${STACK_VERSION} --set && \
+    ghcup install hls ${HLS_VERSION} --set
+
+ARG EMSCRIPTEN_VERSION=3.1.47
+RUN git clone --depth 1 --branch 3.1.47  https://github.com/emscripten-core/emsdk.git && \
+    /emsdk/emsdk install ${EMSCRIPTEN_VERSION} && \
+    /emsdk/emsdk activate ${EMSCRIPTEN_VERSION}
+
+ENV EMSDK=/emsdk
+ENV EMSDK_NODE=/emsdk/node/16.20.0_64bit/bin/node
+ENV PATH=${EMSDK}:${EMSDK}/upstream/emscripten:${EMSDK}/node/16.20.0_64bit/bin:${PATH}
+
+RUN git clone --depth 1 --branch  ghc-9.8.1-release https://gitlab.haskell.org/ghc/ghc.git --recursive
+WORKDIR /ghc
+RUN ./boot && \
+    cabal update && \
+    cabal install \
+      alex-3.4.0.0 \
+      happy-1.20.1.1 && \
+    emconfigure ./configure --target=javascript-unknown-ghcjs  && \
+    hadrian/build -j12 --flavour=quick --bignum=native --docs=none
