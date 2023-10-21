@@ -1,3 +1,3 @@
 packages: *.cabal
-with-compiler: /ghc/_build/stage1/bin/javascript-unknown-ghcjs-ghc
-with-hc-pkg: /ghc/_build/stage1/bin/javascript-unknown-ghcjs-ghc-pkg
+with-compiler: /home/vscode/ghc/_build/stage1/bin/javascript-unknown-ghcjs-ghc
+with-hc-pkg: /home/vscode/ghc/_build/stage1/bin/javascript-unknown-ghcjs-ghc-pkg

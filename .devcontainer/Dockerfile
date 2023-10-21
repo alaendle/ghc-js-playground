@@ -31,10 +31,25 @@ ARG HADOLINT_VERSION=v2.12.0
 RUN curl -L -o /bin/hadolint https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 && \
     chmod a+x /bin/hadolint
 
+# create user
+
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME && \
+    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
+    echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
+
+# install the rest as user
+USER $USERNAME
+
 ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=yes \
     BOOTSTRAP_HASKELL_NO_UPGRADE=yes \
     BOOTSTRAP_HASKELL_MINIMAL=yes
-ENV PATH="/root/.local/bin:/root/.cabal/bin:/root/.ghcup/bin:$PATH"
+ENV PATH=/home/$USERNAME/.local/bin:/home/$USERNAME/.cabal/bin:/home/$USERNAME/.ghcup/bin:$PATH
+
 ARG GHC_VERSION=9.6.3
 ARG CABAL_VERSION=3.10.1.0
 ARG STACK_VERSION=2.13.1
@@ -46,18 +61,20 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh && \
     ghcup install stack ${STACK_VERSION} --set && \
     ghcup install hls ${HLS_VERSION} --set
 
+WORKDIR /home/$USERNAME
+
 ARG EMSCRIPTEN_VERSION=3.1.47
 RUN git clone --depth 1 --branch 3.1.47  https://github.com/emscripten-core/emsdk.git && \
-    /emsdk/emsdk install ${EMSCRIPTEN_VERSION} && \
-    /emsdk/emsdk activate ${EMSCRIPTEN_VERSION}
+    emsdk/emsdk install ${EMSCRIPTEN_VERSION} && \
+    emsdk/emsdk activate ${EMSCRIPTEN_VERSION}
 
-ENV EMSDK=/emsdk
-ENV EMSDK_NODE=/emsdk/node/16.20.0_64bit/bin/node
+ENV EMSDK=/home/$USERNAME/emsdk
+ENV EMSDK_NODE=${EMSDK}/node/16.20.0_64bit/bin/node
 ENV PATH=${EMSDK}:${EMSDK}/upstream/emscripten:${EMSDK}/node/16.20.0_64bit/bin:${PATH}
 ENV LANG=en_US.UTF-8
 
 RUN git clone --depth 1 --branch  ghc-9.8.1-release https://gitlab.haskell.org/ghc/ghc.git --recursive
-WORKDIR /ghc
+WORKDIR /home/$USERNAME/ghc
 RUN ./boot && \
     cabal update && \
     cabal install \
@@ -65,16 +82,3 @@ RUN ./boot && \
       happy-1.20.1.1 && \
     emconfigure ./configure --target=javascript-unknown-ghcjs  && \
     hadrian/build -j12 --flavour=quick --bignum=native --docs=none
-
-# work as user
-
-ARG USERNAME=vscode
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-
-RUN groupadd --gid $USER_GID $USERNAME && \
-    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME && \
-    echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
-    chmod 0440 /etc/sudoers.d/$USERNAME
-
-USER $USERNAME

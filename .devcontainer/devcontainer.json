@@ -4,6 +4,9 @@
 	},
 	"customizations": {
 		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": { 
+			},
 			"extensions": [
 				"mhutchie.git-graph",
 				"streetsidesoftware.code-spell-checker",

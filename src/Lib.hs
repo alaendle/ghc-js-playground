@@ -5,4 +5,6 @@ module Lib
 import Impl
 
 someFunc :: IO ()
-someFunc = printId
+someFunc = do
+    printId
+    printVal $ pure "Haskell callback!"
