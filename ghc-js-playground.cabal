@@ -11,7 +11,7 @@ homepage:       https://github.com/alaendle/ghc-js-playground#readme
 bug-reports:    https://github.com/alaendle/ghc-js-playground/issues
 author:         Andreas Ländle
 maintainer:     alaendle
-copyright:      2023 Andreas Ländle
+copyright:      2024 Andreas Ländle
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
